@@ -33,8 +33,8 @@ def interpolate_color(color1, color2, factor):
     )
     return rgb_to_hex(interpolated_rgb)
 
-def color_snake(snake):
-    head_color = "#ff0000"
+def color_snake(snake, config):
+    head_color = config.get("snake_color", "#FF0000")
     tail_color = "#000000"
 
     length = len(snake)
@@ -117,7 +117,7 @@ DEFAULT_TIMEZONE = "US/Eastern"
 def main(config):
     location = config.get("location")
     loc = json.decode(location) if location else DEFAULT_LOCATION
-    timezone = loc.get("timezone", config.get("$tz", DEFAULT_TIMEZONE))  # Utilize special timezone variable
+    timezone = loc.get("timezone", time.tz())  # Utilize special timezone variable
     now = time.now().in_location(timezone)
 
     use_24hour = config.bool("24hour", False)
@@ -148,7 +148,7 @@ def main(config):
         # print("remaining moves: " + str(remaining_moves))
 
         snake = move(snake, direction, remaining_moves)
-        snake = color_snake(snake)
+        snake = color_snake(snake, config)
         snake_render_elements.append(
             render.Stack(
                 children = snake_to_elements(snake),
@@ -197,6 +197,13 @@ def get_schema():
                 icon = "clock",
                 desc = "Choose whether to display 12-hour time (off) or 24-hour time (on).",
                 default = False,
+            ),
+            schema.Color(
+                id = "snake_color",
+                name = "Snake Color",
+                desc = "The color of the snake",
+                icon = "brush",
+                default = "#FF0000",
             ),
         ],
     )

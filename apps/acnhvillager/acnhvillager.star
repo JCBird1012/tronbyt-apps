@@ -5,10 +5,8 @@ Description: See your favorite villagers from Animal Crossing New Horizons.
 Author: colinscruggs
 """
 
-load("cache.star", "cache")
-load("encoding/base64.star", "base64")
-load("encoding/json.star", "json")
 load("http.star", "http")
+load("images/fail.png", FAIL_IMAGE = "file")
 load("random.star", "random")
 load("render.star", "render")
 load("schema.star", "schema")
@@ -20,10 +18,10 @@ ICON_HEIGHT = 26
 FONTS = ["CG-pixel-3x5-mono", "tb-8", "tom-thumb", "Dina_r400-6", "5x8"]
 FONT_DEFAULT = FONTS[0]
 
-FAIL_IMAGE = "aHR0cHM6Ly91cGxvYWQud2lraW1lZGlhLm9yZy93aWtpcGVkaWEvY29tbW9ucy90aHVtYi81LzU4L0FuaW1hbF9Dcm9zc2luZ19MZWFmLnBuZy81MDBweC1BbmltYWxfQ3Jvc3NpbmdfTGVhZi5wbmc="
 FAIL_MESSAGE = "%s failed with status: %d"
 
-ACNH_API_URL = "https://acnhapi.com/v1/villagers/"
+ACNH_API_VILLAGERS = "https://raw.githubusercontent.com/alexislours/ACNHAPI/refs/heads/master/villagers.json"
+ACNH_API_ICON_TEMPLATE = "https://github.com/alexislours/ACNHAPI/raw/master/icons/villagers/{}.png"
 
 def main(config):
     language = config.get("language") or "USen"
@@ -38,9 +36,9 @@ def main(config):
         fail("Unable to find villager :c")
 
     # Set villager icon
-    villager_icon = villager["icon_uri"]
+    villager_icon = ACNH_API_ICON_TEMPLATE.format(villager["file-name"])
     if villager_icon == None:
-        villager_icon = get_villager_icon(base64.decode(FAIL_IMAGE))
+        villager_icon = FAIL_IMAGE.readall()
     else:
         villager_icon = get_villager_icon(villager_icon)
 
@@ -117,36 +115,16 @@ def main(config):
 
 # Cache and encode villager data
 def get_villager_data():
-    villager_data_cached = cache.get("villager_data")
-    villager_data = []
-
-    if villager_data_cached != None:
-        villager_data = json.decode(villager_data_cached)
-    else:
-        rep = http.get(ACNH_API_URL)
-        if rep.status_code != 200:
-            fail(FAIL_MESSAGE % (ACNH_API_URL, rep.status_code))
-        villager_data = rep.json()
-
-        # TODO: Determine if this cache call can be converted to the new HTTP cache.
-        cache.set("villager_data", json.encode(villager_data), ttl_seconds = CACHE_TTL_SECONDS)
-
-    return villager_data
+    rep = http.get(ACNH_API_VILLAGERS, ttl_seconds = CACHE_TTL_SECONDS)
+    if rep.status_code != 200:
+        fail(FAIL_MESSAGE % (ACNH_API_VILLAGERS, rep.status_code))
+    return rep.json()
 
 # Cache and encode villager icon
 def get_villager_icon(url):
-    key = base64.encode(url)
-    villager_icon_cache = cache.get(key)
-
-    if villager_icon_cache != None:
-        return base64.decode(villager_icon_cache)
-
-    res = http.get(url = url)
+    res = http.get(url = url, ttl_seconds = CACHE_TTL_SECONDS)
     if res.status_code != 200:
         fail(FAIL_MESSAGE % (url, res.status_code))
-
-    # TODO: Determine if this cache call can be converted to the new HTTP cache.
-    cache.set(key, base64.encode(res.body()), ttl_seconds = CACHE_TTL_SECONDS)
     return res.body()
 
 # Adds padding for villager names that are less than 7 characters

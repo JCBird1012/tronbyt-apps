@@ -1,23 +1,19 @@
 """
 Applet: Product Hunt
 Summary: Product Hunt top products
-Description: View the daily top tech products from Product Hunt.
+Description: View the daily top tech products from Product Hunt. Generate your Developer Token at https://www.producthunt.com/v2/oauth/applications.
 Author: Daniel Sitnik
 """
 
 load("animation.star", "animation")
-load("encoding/base64.star", "base64")
 load("http.star", "http")
+load("images/ph_logo.png", PH_LOGO_ASSET = "file")
+load("images/upvote_icon.png", UPVOTE_ICON_ASSET = "file")
 load("render.star", "render")
 load("schema.star", "schema")
 
-UPVOTE_ICON = base64.decode("""
-iVBORw0KGgoAAAANSUhEUgAAAAoAAAAFCAYAAAB8ZH1oAAAAAXNSR0IArs4c6QAAAC9JREFUGFd9ykEKADAIxEDz/0evtFCxi5hjGMKSJAD/3zjoAccFO5rwhRNyzIY6TswcFAbAvxbgAAAAAElFTkSuQmCC
-""")
-
-PH_LOGO = base64.decode("""
-iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAYAAAByDd+UAAACUElEQVR4nL2WPWsUURSG3xsXBC2yhdipk1+QTW3h5B8o7IpdslFBiKCFWI+lsbEJCBInVkpWcC20UXC2sFHIboqAVk4sxWJTKAhZbt4zH8lkdu7s1yQPnDvnDgwP98y5d0ZhCPTtWgU9vQCNCqdlRoUhdBhdKHg4pd6p5w2Z55Ir1PXrCxwdhoWhUD7DUe7GSxhQjD70nRsW/u+5TG2Mh4fTpbp69tpHij6hvlW10cNbpmXGJHRRUvPpMh8RRrLPTIujpOaS0gNhVMY20zKjSLos71xc3kNhvSors3E8eMp9M89rKNRLtUVo7TLN5kWDQw6bX4FPH4Dv25wYmJq6ptY2mqGwXvvJ0YKJQcKYtVXgi4dslK/cxowKNvWebvOOmaTwxzaHBBcs4MxZHPBwGfjzm0kG0kBc3VOu7h6nZpLCpRqHFDeXgcs2Aj6+B16tIxOFRxRWPQBXGGYGCc+dB1ZWmRCpwGMHBloibDOpMMwMEl60AOcJAvKFHRFqJvnkCWV1dx9QOsMJkXJKWQ2MLszj39+waeRqgMJah00zy9zMMEKRrDjALx9m1BaFIzaNvKM0m9/C/SfSfKRpCtgWwxJsi1E3/iRC2fi88Gir+gAuMbIpRrjDA9wKhaMc3uMKk4e3wFV6GNQ849Pi6myQQ2H4Ae4wnWYUyS4/wJW+D7Bwor8YMZG0yXSaMQm7lNlJmdAnFKLyrmP8d9piGRfjMibJFMZE3esgb8scZYfdeF+6kXkmucKY4HDo6av81bf5SJl3ZhGgtpjHv/rNdPmy2AeKXO+vf7/W8gAAAABJRU5ErkJggg==
-""")
+PH_LOGO = PH_LOGO_ASSET.readall()
+UPVOTE_ICON = UPVOTE_ICON_ASSET.readall()
 
 DEFAULT_DISPLAY = "top1"
 
@@ -35,11 +31,18 @@ def main(config):
 
     # get config
     config_display = config.get("display", DEFAULT_DISPLAY)
+    dev_token = config.get("dev_token", "")
+
+    # if there's no token, render instructions
+    if dev_token == "":
+        return render_no_dev_token()
 
     # call product hunt API (graphql)
-    res = http.post("https://ph-graph-api-explorer.herokuapp.com/graphql", ttl_seconds = CACHE_TTL, json_body = {
+    res = http.post("https://api.producthunt.com/v2/api/graphql", ttl_seconds = CACHE_TTL, json_body = {
         "operationName": "Posts",
         "query": "query Posts {\nposts(featured: true, first: 3) {\nnodes {\nname\nvotesCount\nthumbnail {\ntype\nurl\n}\n}\n}\n}",
+    }, headers = {
+        "Authorization": "Bearer %s" % dev_token,
     })
 
     # handle api errors
@@ -105,6 +108,13 @@ def get_schema():
     return schema.Schema(
         version = "1",
         fields = [
+            schema.Text(
+                id = "dev_token",
+                name = "Developer Token",
+                desc = "Product Hunt Developer Token",
+                icon = "key",
+                secret = True,
+            ),
             schema.Dropdown(
                 id = "display",
                 name = "Display",
@@ -246,6 +256,31 @@ def render_empty():
                 render.Box(height = 1, width = 64, color = "#fdf0ee"),
                 render.Text(content = "No data", color = "#ff0"),
                 render.Text(content = "to display!", color = "#ff0"),
+            ],
+        ),
+    )
+
+def render_no_dev_token():
+    """Renders a default message when no developer token is configured.
+
+    Returns:
+        render.Root: Root widget tree.
+    """
+
+    return render.Root(
+        child = render.Column(
+            main_align = "space_around",
+            cross_align = "center",
+            expanded = True,
+            children = [
+                render_header(),
+                render.Box(height = 1, width = 64, color = "#fdf0ee"),
+                render.Text(content = "Developer Token", font = "tom-thumb", color = "#ff0"),
+                render.Marquee(
+                    width = 64,
+                    offset_start = 32,
+                    child = render.Text(content = "Create at producthunt.com/v2/oauth/applications", font = "tom-thumb", color = "#0f0"),
+                ),
             ],
         ),
     )

@@ -2,20 +2,20 @@
 
 [![Docs](https://img.shields.io/badge/docs-tidbyt.dev-blue?style=flat-square)](https://tidbyt.dev)
 [![Discourse](https://img.shields.io/discourse/status?server=https%3A%2F%2Fdiscuss.tidbyt.com&style=flat-square)](https://discuss.tidbyt.com/)
-[![Discord Server](https://img.shields.io/discord/928484660785336380?style=flat-square)](https://discord.gg/r45MXG4kZc)
+[![Discord Server](https://img.shields.io/discord/928484660785336380?style=flat-square)](https://discord.gg/rsCvHFsGfX)
 
 ---
 
 ### **Discover, explore, and install hundreds of apps!**
 
-**[🎯 View the Current Apps →](https://tronbyt.github.io/apps/app-viewer/)**
+**[🎯 View the Current Apps →](https://apps.tronbyt.com/)**
 
 ---
 
 Tronbyt-Apps is a hard fork of the Tidbyt's Community repo. These apps have been developed by the [Tidbyt community][3] 🚀
-This exists because the Tidbyt folks have stopped merging pull requests since their acquisition by Modal.
+This exists because the Tidbyt folks have stopped merging pull requests since their acquisition by Modal. Since the fork, many apps have been improved, fixed, and added. For example, many apps now support 2x displays (128x64) or take advantage of new pixlet features like internationalization.
 
-This repo is for publishing apps to all Tronbyt (formally Tidbyt) users. Interested in developing apps? Check out [Pixlet][2] and follow the [Hello, World!][4] tutorial. When your app is ready to publish, follow our guide below.
+This repo is for publishing apps to all Tronbyt (formerly Tidbyt) users. Interested in developing apps? Check out [Pixlet][2] and follow the [Hello, World!][4] tutorial. When your app is ready to publish, follow our guide below.
 
 ![Banner Image](docs/assets/banner.jpg)
 
@@ -41,13 +41,13 @@ Confused by the linter? Want to know where your app is in the release process? C
 
 ## Contributing Changes
 
-First off, we're over the moon that you're here and want to share what you've been working on with the broader Tidbyt user base 🎉.
+First off, we're over the moon that you're here and want to share what you've been working on with the broader Tronbyt user base 🎉.
 
 ## Thanks
 
 [1]: https://tidbyt.com
-[2]: https://github.com/tidbyt/pixlet
+[2]: https://github.com/tronbyt/pixlet
 [3]: https://discuss.tidbyt.com/
-[4]: https://github.com/tidbyt/pixlet#hello-world
+[4]: https://github.com/tronbyt/pixlet#hello-world
 [5]: https://github.com/mtimkovich
 [6]: https://tidbyt.dev/docs/publish/publishing-apps
